@@ -612,3 +612,218 @@ const styles = StyleSheet.create({
 ```
 
 We will also have to add the imges in our ***asset*** folder. Add the **meteor_bg.jpg**
+
+## IssLocation.js
+
+First off, we will be needing a map where we will add a marker for the ISS's current location.
+
+Let's start by installing react-native-maps for our use with the following command -
+
+```bash
+expo install react-native-maps
+```
+
+Alright! Now, to fetch the ISS Location's data, we can refer to the following URL -
+
+https://api.wheretheiss.at/v1/satellites/25544
+
+Now let's start coding -
+
+```js
+import React, { Component } from "react";
+import {
+    View,
+    Text,
+    StyleSheet,
+    SafeAreaView,
+    Platform,
+    StatusBar,
+    ImageBackground,
+    Alert
+} from "react-native";
+import MapView, { Marker } from 'react-native-maps';
+import axios from "axios";
+import IssInfo from "./IssInfo";
+
+export default class IssLocationScreen extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            location: {}
+        };
+    }
+
+    componentDidMount() {
+        this.getIssLocation()
+    }
+
+    getIssLocation = () => {
+        axios
+            .get("https://api.wheretheiss.at/v1/satellites/25544")
+            .then(response => {
+                this.setState({ location: response.data })
+            })
+            .catch(error => {
+                Alert.alert(error.message)
+            })
+    }
+
+    render() {
+        if (Object.keys(this.state.location).length === 0) {
+            return (
+                <View
+                    style={{
+                        flex: 1,
+                        justifyContent: "center",
+                        alignItems: "center"
+                    }}>
+                    <Text>Loading</Text>
+                </View>
+            )
+        } else {
+            return (
+                <View style={styles.container}>
+                    <SafeAreaView style={styles.droidSafeArea} />
+                    <ImageBackground source={require('../assets/iss_bg.jpg')} style={styles.backgroundImage}>
+                        <View style={styles.titleContainer}>
+                            <Text style={styles.titleText}>ISS Location</Text>
+                        </View>
+                        <View style={styles.mapContainer}>
+                            <MapView
+                                style={styles.map}
+                                region={{
+                                    latitude: this.state.location.latitude,
+                                    longitude: this.state.location.longitude,
+                                    latitudeDelta: 100,
+                                    longitudeDelta: 100
+                                }}
+                            >
+                                <Marker
+                                    coordinate={{ latitude: this.state.location.latitude, longitude: this.state.location.longitude }}
+                                />
+                            </MapView>
+                        </View>
+                        <IssInfo />
+                    </ImageBackground>
+                </View>
+            );
+        }
+    }
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1
+    },
+    droidSafeArea: {
+        marginTop: Platform.OS === "android" ? StatusBar.currentHeight : 0
+    },
+    backgroundImage: {
+        flex: 1,
+        resizeMode: 'cover',
+    },
+    titleContainer: {
+        flex: 0.1,
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    titleText: {
+        fontSize: 30,
+        fontWeight: "bold",
+        color: "white"
+    },
+    mapContainer: {
+        flex: 0.7
+    },
+    map: {
+        width: "100%",
+        height: "100%"
+    }
+});
+```
+
+Here, please note that we do not want to keep updating the map as it would look bad, but we want to keep updating the information we are displaying in the information tab. For this, we have created a separate child component for this screen with the name ***IssInfo.js***.
+
+The code for it looks something like -
+
+```js
+import React, { Component } from "react";
+import {
+    View,
+    Text,
+    StyleSheet,
+    Alert
+} from "react-native";
+import axios from "axios";
+
+export default class IssLocationScreen extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            location: {}
+        };
+    }
+
+    componentDidMount() {
+        this.getIssLocation()
+        try {
+            setInterval(async () => {
+                this.getIssLocation()
+            }, 5000);
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    getIssLocation = () => {
+        axios
+            .get("https://api.wheretheiss.at/v1/satellites/25544")
+            .then(response => {
+                this.setState({ location: response.data })
+            })
+            .catch(error => {
+                Alert.alert(error.message)
+            })
+    }
+
+    render() {
+        if (Object.keys(this.state.location).length === 0) {
+            return (
+                <View
+                    style={{
+                        flex: 1,
+                        justifyContent: "center",
+                        alignItems: "center"
+                    }}>
+                    <Text>Loading</Text>
+                </View>
+            )
+        } else {
+            return (
+                <View style={styles.infoContainer}>
+                    <Text style={styles.infoText}>Latitude: {this.state.location.latitude}</Text>
+                    <Text style={styles.infoText}>Longitude: {this.state.location.longitude}</Text>
+                    <Text style={styles.infoText}>Altitude (KM): {this.state.location.altitude}</Text>
+                    <Text style={styles.infoText}>Velocity (KM/H): {this.state.location.velocity}</Text>
+                </View>
+            );
+        }
+    }
+}
+
+const styles = StyleSheet.create({
+    infoContainer: {
+        flex: 0.2,
+        backgroundColor: 'rgba(52, 52, 52, 0.5)',
+        marginLeft: 10,
+        marginRight: 10,
+        marginTop: 5,
+        borderRadius: 10,
+        padding: 10
+    },
+    infoText: {
+        fontSize: 15,
+        color: "white"
+    }
+});
+```

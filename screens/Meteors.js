@@ -38,15 +38,29 @@ export default class MeteorScreen extends Component {
     }
 
     renderItem = ({ item }) => {
+        let diameter = (item.estimated_diameter.kilometers.estimated_diameter_min + item.estimated_diameter.kilometers.estimated_diameter_max) / 2
+        let threatScore = (diameter / item.close_approach_data[0].miss_distance.kilometers) * 1000000000
+        console.log(threatScore)
+        let color;
+        if (threatScore <= 30) {
+            color = "green"
+        } else if (threatScore > 30 && threatScore <= 65) {
+            color = "yellow"
+        } else if (threatScore > 65 && threatScore <= 100) {
+            color = "orange"
+        } else {
+            color = "red"
+        }
         return (
             <TouchableOpacity style={styles.listContainer}>
                 <Text style={styles.cardTitle}>{item.name}</Text>
+                <View style={[styles.threatDetector, { width: threatScore, backgroundColor: color }]}></View>
                 <Text style={styles.cardText}>Closest to Earth - {item.close_approach_data[0].close_approach_date_full}</Text>
                 <Text style={styles.cardText}>Minimum Diameter (KM) - {item.estimated_diameter.kilometers.estimated_diameter_min}</Text>
                 <Text style={styles.cardText}>Maximum Diameter (KM) - {item.estimated_diameter.kilometers.estimated_diameter_max}</Text>
                 <Text style={styles.cardText}>Velocity (KM/H) - {item.close_approach_data[0].relative_velocity.kilometers_per_hour}</Text>
                 <Text style={styles.cardText}>Missing Earth by (KM) - {item.close_approach_data[0].miss_distance.kilometers}</Text>
-            </TouchableOpacity>
+            </TouchableOpacity >
         );
     };
 
@@ -124,7 +138,6 @@ const styles = StyleSheet.create({
         marginRight: 10,
         marginTop: 5,
         borderRadius: 10,
-        backgroundColor: 'rgba(52, 52, 52, 0.5)',
         padding: 10
     },
     cardTitle: {
@@ -136,4 +149,8 @@ const styles = StyleSheet.create({
     cardText: {
         color: "white"
     },
+    threatDetector: {
+        height: 10,
+        marginBottom: 10
+    }
 });

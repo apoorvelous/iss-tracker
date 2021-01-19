@@ -64,20 +64,39 @@ export default class UpdateScreen extends Component {
     }
 
     renderItem = ({ item }) => {
+        let color;
+        if (item.type == "Article") {
+            color = "red"
+        } else if (item.type == "Report") {
+            color = "yellow"
+        } else {
+            color = "green"
+        }
         return (
             <TouchableOpacity style={styles.listContainer}
                 onPress={() => Linking.openURL(item.url).catch(err => console.error("Couldn't load page", err))}
             >
                 <Text style={styles.cardTitle}>{item.title}</Text>
-                <Text style={styles.publishedDate}>{item.published_date}</Text>
+                <View style={[styles.typeIndicator, { backgroundColor: color, opacity: 0.5 }]}></View>
             </TouchableOpacity>
         );
     };
 
     keyExtractor = (item, index) => index.toString();
 
+    addFlag = (arr, value) => {
+        for (let i = 0; i < arr.length; i++) {
+            console.log(arr[i])
+            arr[i].type = value
+        }
+        return arr
+    }
+
     render() {
-        let events = this.state.articles.concat(this.state.reports).concat(this.state.blogs)
+        let articles = this.addFlag(this.state.articles, "Article")
+        let reports = this.addFlag(this.state.reports, "Report")
+        let blogs = this.addFlag(this.state.blogs, "Blog")
+        let events = articles.concat(reports).concat(blogs)
         events = events.sort(function (a, b) {
             return new Date(b.published_date) - new Date(a.published_date);
         });
@@ -153,10 +172,10 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         color: "white"
     },
-    publishedDate: {
-        fontSize: 15,
-        color: "white",
-        alignSelf: "flex-end",
-        padding: 10
+    typeIndicator: {
+        width: 20,
+        height: 20,
+        borderRadius: 44 / 2,
+        alignSelf: "flex-end"
     }
 });
