@@ -10,9 +10,11 @@ import {
     Alert,
     FlatList,
     TouchableOpacity,
-    Linking
+    Linking,
+    Image
 } from "react-native";
 import axios from "axios";
+import { withSafeAreaInsets } from "react-native-safe-area-context";
 
 export default class UpdateScreen extends Component {
     constructor(props) {
@@ -64,22 +66,37 @@ export default class UpdateScreen extends Component {
     }
 
     renderItem = ({ item }) => {
-        let color;
-        if (item.type == "Article") {
-            color = "red"
-        } else if (item.type == "Report") {
-            color = "yellow"
+        let width = 50;
+        let url;
+        if (item.type == "Report") {
+            url = require("../assets/iss_icon.png")
         } else {
-            color = "green"
+            url = require("../assets/blog_icon.png")
         }
-        return (
-            <TouchableOpacity style={styles.listContainer}
-                onPress={() => Linking.openURL(item.url).catch(err => console.error("Couldn't load page", err))}
-            >
-                <Text style={styles.cardTitle}>{item.title}</Text>
-                <View style={[styles.typeIndicator, { backgroundColor: color, opacity: 0.5 }]}></View>
-            </TouchableOpacity>
-        );
+        if (item.type == "Article") {
+            console.log(item.featured_image)
+            return (
+                <TouchableOpacity style={styles.listContainer}
+                    onPress={() => Linking.openURL(item.url).catch(err => console.error("Couldn't load page", err))}
+                >
+                    <Text style={styles.cardTitle}>{item.title}</Text>
+                    <View style={styles.iconContainer}>
+                        <Image source={{ "uri": item.featured_image }} style={{ width: "100%", height: 100 }}></Image>
+                    </View>
+                </TouchableOpacity >
+            );
+        } else {
+            return (
+                <TouchableOpacity style={styles.listContainer}
+                    onPress={() => Linking.openURL(item.url).catch(err => console.error("Couldn't load page", err))}
+                >
+                    <Text style={styles.cardTitle}>{item.title}</Text>
+                    <View style={styles.iconContainer}>
+                        <Image source={url} style={{ width: width, height: width }}></Image>
+                    </View>
+                </TouchableOpacity>
+            );
+        }
     };
 
     keyExtractor = (item, index) => index.toString();
@@ -172,10 +189,9 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         color: "white"
     },
-    typeIndicator: {
-        width: 20,
-        height: 20,
-        borderRadius: 44 / 2,
-        alignSelf: "flex-end"
+    iconContainer: {
+        justifyContent: "center",
+        alignItems: "center",
+        margin: 20
     }
 });

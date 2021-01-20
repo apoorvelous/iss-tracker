@@ -10,7 +10,7 @@ import {
     Alert,
     FlatList,
     TouchableOpacity,
-    Linking
+    Image
 } from "react-native";
 import axios from "axios";
 
@@ -40,7 +40,6 @@ export default class MeteorScreen extends Component {
     renderItem = ({ item }) => {
         let diameter = (item.estimated_diameter.kilometers.estimated_diameter_min + item.estimated_diameter.kilometers.estimated_diameter_max) / 2
         let threatScore = (diameter / item.close_approach_data[0].miss_distance.kilometers) * 1000000000
-        console.log(threatScore)
         let color;
         if (threatScore <= 30) {
             color = "green"
@@ -53,13 +52,20 @@ export default class MeteorScreen extends Component {
         }
         return (
             <TouchableOpacity style={styles.listContainer}>
-                <Text style={styles.cardTitle}>{item.name}</Text>
-                <View style={[styles.threatDetector, { width: threatScore, backgroundColor: color }]}></View>
-                <Text style={styles.cardText}>Closest to Earth - {item.close_approach_data[0].close_approach_date_full}</Text>
-                <Text style={styles.cardText}>Minimum Diameter (KM) - {item.estimated_diameter.kilometers.estimated_diameter_min}</Text>
-                <Text style={styles.cardText}>Maximum Diameter (KM) - {item.estimated_diameter.kilometers.estimated_diameter_max}</Text>
-                <Text style={styles.cardText}>Velocity (KM/H) - {item.close_approach_data[0].relative_velocity.kilometers_per_hour}</Text>
-                <Text style={styles.cardText}>Missing Earth by (KM) - {item.close_approach_data[0].miss_distance.kilometers}</Text>
+                <View style={{ flexDirection: "row" }}>
+                    <View style={{ flex: 0.8 }}>
+                        <Text style={styles.cardTitle}>{item.name}</Text>
+                        <View style={[styles.threatDetector, { width: threatScore, backgroundColor: color }]}></View>
+                        <Text style={styles.cardText}>Closest to Earth - {item.close_approach_data[0].close_approach_date_full}</Text>
+                        <Text style={styles.cardText}>Minimum Diameter (KM) - {item.estimated_diameter.kilometers.estimated_diameter_min}</Text>
+                        <Text style={styles.cardText}>Maximum Diameter (KM) - {item.estimated_diameter.kilometers.estimated_diameter_max}</Text>
+                        <Text style={styles.cardText}>Velocity (KM/H) - {item.close_approach_data[0].relative_velocity.kilometers_per_hour}</Text>
+                        <Text style={styles.cardText}>Missing Earth by (KM) - {item.close_approach_data[0].miss_distance.kilometers}</Text>
+                    </View>
+                    <View style={{ flex: 0.2 }}>
+                        <Image source={require("../assets/meteor_icon.png")} style={{ width: threatScore * 5, height: threatScore * 5 }}></Image>
+                    </View>
+                </View>
             </TouchableOpacity >
         );
     };

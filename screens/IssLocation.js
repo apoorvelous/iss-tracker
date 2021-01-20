@@ -8,17 +8,20 @@ import {
     StatusBar,
     ImageBackground,
     Alert,
-    Image
+    Image,
+    Touchable
 } from "react-native";
 import MapView, { Marker } from 'react-native-maps';
 import axios from "axios";
 import IssInfo from "./IssInfo";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 export default class IssLocationScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            location: {}
+            location: {},
+            isRefresh: false
         };
     }
 
@@ -56,6 +59,13 @@ export default class IssLocationScreen extends Component {
                     <ImageBackground source={require('../assets/iss_bg.jpg')} style={styles.backgroundImage}>
                         <View style={styles.titleContainer}>
                             <Text style={styles.titleText}>ISS Location</Text>
+                        </View>
+                        <View style={styles.refeshContainer}>
+                            <TouchableOpacity style={{ width: 100, height: "100%", alignItems: "center" }} onPress={() =>
+                                this.setState({})
+                            }>
+                                <Image source={require("../assets/refresh_icon.jpg")} style={{ width: 50, height: 50 }}></Image>
+                            </TouchableOpacity>
                         </View>
                         <View style={styles.mapContainer}>
                             <MapView
@@ -103,8 +113,13 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         color: "white"
     },
+    refeshContainer: {
+        flex: 0.1,
+        justifyContent: "center",
+        alignItems: "center"
+    },
     mapContainer: {
-        flex: 0.7
+        flex: 0.6
     },
     map: {
         width: "100%",

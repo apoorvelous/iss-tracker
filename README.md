@@ -1,5 +1,7 @@
 # ISS Tracker App (Steps)
 
+## Class 1 (Blueprint planning plus Stack Navigation)
+
 **This app will be an ISS Tracker App which will show the live location of International Space Station. It will also display all the meteors that are going to visit or pass nearby our Planet Earth and it will also display the list of recent updates on ISS and space events. To summarise, the App will have the following functionalities -**
 
 ***1. Live Location for the International Space Station***
@@ -95,7 +97,7 @@ export default class HomeScreen extends Component {
                     justifyContent: "center",
                     alignItems: "center"
                 }}>
-                <Text>Hello, world!</Text>
+                <Text>Home Screen!</Text>
             </View>
         )
     }
@@ -115,7 +117,7 @@ export default class IssLocationScreen extends Component {
                     justifyContent: "center",
                     alignItems: "center"
                 }}>
-                <Text>Hello, world!</Text>
+                <Text>ISS Location Screen!</Text>
             </View>
         )
     }
@@ -135,7 +137,7 @@ export default class MeteorScreen extends Component {
                     justifyContent: "center",
                     alignItems: "center"
                 }}>
-                <Text>Hello, world!</Text>
+                <Text>Meteor Screen!</Text>
             </View>
         )
     }
@@ -155,16 +157,16 @@ export default class UpdateScreen extends Component {
                     justifyContent: "center",
                     alignItems: "center"
                 }}>
-                <Text>Hello, world!</Text>
+                <Text>Updates Screen!</Text>
             </View>
         )
     }
 }
 ```
 
-## Home.js
+## Home.js (Class 2)
 
-Our folder structure is created now. All the screens display a simple **Hello, world!**
+Our folder structure is created now. All the screens display a simple **Home Screen!**
 
 Now, let's create our home screen with the following lines of code -
 
@@ -270,13 +272,17 @@ We will also have to add the images in our ***asset*** folder. Add the following
 **3. meteor_icon.png**
 **4. rocket_icon.png**
 
-## Updates.js
+## Updates.js (Class 3)
 
 Let's work on ***Updates.js*** now. We can find the data for the upcoming space events and about ISS here -
 
 https://spaceflightnewsapi.net/api/v1/articles
 https://spaceflightnewsapi.net/api/v1/reports
 https://spaceflightnewsapi.net/api/v1/blogs
+
+You can copy paste the outcome from these APIs and paste it in the JSON Prettifier to see all the data that the API is giving us in a structured and clean way. The link to JSON Prettifier is here -
+
+https://jsonformatter.curiousconcept.com/
 
 Before we start writing the code, let's install axios -
 
@@ -299,11 +305,13 @@ import {
     Alert,
     FlatList,
     TouchableOpacity,
-    Linking
+    Linking,
+    Image
 } from "react-native";
 import axios from "axios";
+import { withSafeAreaInsets } from "react-native-safe-area-context";
 
-export default class HomeScreen extends Component {
+export default class UpdateScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -352,25 +360,55 @@ export default class HomeScreen extends Component {
             })
     }
 
-    // loadInBrowser = ({ url }) => {
-    //     Linking.openURL(url).catch(err => console.error("Couldn't load page", err));
-    // }
-
     renderItem = ({ item }) => {
-        return (
-            <TouchableOpacity style={styles.listContainer}
-                onPress={() => Linking.openURL(item.url).catch(err => console.error("Couldn't load page", err))}
-            >
-                <Text style={styles.cardTitle}>{item.title}</Text>
-                <Text style={styles.publishedDate}>{item.published_date}</Text>
-            </TouchableOpacity>
-        );
+        let width = 50;
+        let url;
+        if (item.type == "Report") {
+            url = require("../assets/iss_icon.png")
+        } else {
+            url = require("../assets/blog_icon.png")
+        }
+        if (item.type == "Article") {
+            console.log(item.featured_image)
+            return (
+                <TouchableOpacity style={styles.listContainer}
+                    onPress={() => Linking.openURL(item.url).catch(err => console.error("Couldn't load page", err))}
+                >
+                    <Text style={styles.cardTitle}>{item.title}</Text>
+                    <View style={styles.iconContainer}>
+                        <Image source={{ "uri": item.featured_image }} style={{ width: "100%", height: 100 }}></Image>
+                    </View>
+                </TouchableOpacity >
+            );
+        } else {
+            return (
+                <TouchableOpacity style={styles.listContainer}
+                    onPress={() => Linking.openURL(item.url).catch(err => console.error("Couldn't load page", err))}
+                >
+                    <Text style={styles.cardTitle}>{item.title}</Text>
+                    <View style={styles.iconContainer}>
+                        <Image source={url} style={{ width: width, height: width }}></Image>
+                    </View>
+                </TouchableOpacity>
+            );
+        }
     };
 
     keyExtractor = (item, index) => index.toString();
 
+    addFlag = (arr, value) => {
+        for (let i = 0; i < arr.length; i++) {
+            console.log(arr[i])
+            arr[i].type = value
+        }
+        return arr
+    }
+
     render() {
-        let events = this.state.articles.concat(this.state.reports).concat(this.state.blogs)
+        let articles = this.addFlag(this.state.articles, "Article")
+        let reports = this.addFlag(this.state.reports, "Report")
+        let blogs = this.addFlag(this.state.blogs, "Blog")
+        let events = articles.concat(reports).concat(blogs)
         events = events.sort(function (a, b) {
             return new Date(b.published_date) - new Date(a.published_date);
         });
@@ -446,18 +484,17 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         color: "white"
     },
-    publishedDate: {
-        fontSize: 15,
-        color: "white",
-        alignSelf: "flex-end",
-        padding: 10
+    iconContainer: {
+        justifyContent: "center",
+        alignItems: "center",
+        margin: 20
     }
 });
 ```
 
 We will also have to add the images in our ***asset*** folder. Add the **bg_updates.jpg**
 
-## Meteors.js
+## Meteors.js (Class 4)
 
 Let's start with ***Meteors.js***. For this, we'll use the NASA's API. Before we get started, let's generate an API key from here -
 
@@ -482,7 +519,7 @@ import {
     Alert,
     FlatList,
     TouchableOpacity,
-    Linking
+    Image
 } from "react-native";
 import axios from "axios";
 
@@ -510,15 +547,35 @@ export default class MeteorScreen extends Component {
     }
 
     renderItem = ({ item }) => {
+        let diameter = (item.estimated_diameter.kilometers.estimated_diameter_min + item.estimated_diameter.kilometers.estimated_diameter_max) / 2
+        let threatScore = (diameter / item.close_approach_data[0].miss_distance.kilometers) * 1000000000
+        let color;
+        if (threatScore <= 30) {
+            color = "green"
+        } else if (threatScore > 30 && threatScore <= 65) {
+            color = "yellow"
+        } else if (threatScore > 65 && threatScore <= 100) {
+            color = "orange"
+        } else {
+            color = "red"
+        }
         return (
             <TouchableOpacity style={styles.listContainer}>
-                <Text style={styles.cardTitle}>{item.name}</Text>
-                <Text style={styles.cardText}>Closest to Earth - {item.close_approach_data[0].close_approach_date_full}</Text>
-                <Text style={styles.cardText}>Minimum Diameter (KM) - {item.estimated_diameter.kilometers.estimated_diameter_min}</Text>
-                <Text style={styles.cardText}>Maximum Diameter (KM) - {item.estimated_diameter.kilometers.estimated_diameter_max}</Text>
-                <Text style={styles.cardText}>Velocity (KM/H) - {item.close_approach_data[0].relative_velocity.kilometers_per_hour}</Text>
-                <Text style={styles.cardText}>Missing Earth by (KM) - {item.close_approach_data[0].miss_distance.kilometers}</Text>
-            </TouchableOpacity>
+                <View style={{ flexDirection: "row" }}>
+                    <View style={{ flex: 0.8 }}>
+                        <Text style={styles.cardTitle}>{item.name}</Text>
+                        <View style={[styles.threatDetector, { width: threatScore, backgroundColor: color }]}></View>
+                        <Text style={styles.cardText}>Closest to Earth - {item.close_approach_data[0].close_approach_date_full}</Text>
+                        <Text style={styles.cardText}>Minimum Diameter (KM) - {item.estimated_diameter.kilometers.estimated_diameter_min}</Text>
+                        <Text style={styles.cardText}>Maximum Diameter (KM) - {item.estimated_diameter.kilometers.estimated_diameter_max}</Text>
+                        <Text style={styles.cardText}>Velocity (KM/H) - {item.close_approach_data[0].relative_velocity.kilometers_per_hour}</Text>
+                        <Text style={styles.cardText}>Missing Earth by (KM) - {item.close_approach_data[0].miss_distance.kilometers}</Text>
+                    </View>
+                    <View style={{ flex: 0.2 }}>
+                        <Image source={require("../assets/meteor_icon.png")} style={{ width: threatScore * 5, height: threatScore * 5 }}></Image>
+                    </View>
+                </View>
+            </TouchableOpacity >
         );
     };
 
@@ -596,7 +653,6 @@ const styles = StyleSheet.create({
         marginRight: 10,
         marginTop: 5,
         borderRadius: 10,
-        backgroundColor: 'rgba(52, 52, 52, 0.5)',
         padding: 10
     },
     cardTitle: {
@@ -608,12 +664,16 @@ const styles = StyleSheet.create({
     cardText: {
         color: "white"
     },
+    threatDetector: {
+        height: 10,
+        marginBottom: 10
+    }
 });
 ```
 
 We will also have to add the imges in our ***asset*** folder. Add the **meteor_bg.jpg**
 
-## IssLocation.js
+## IssLocation.js (Class 5)
 
 First off, we will be needing a map where we will add a marker for the ISS's current location.
 
@@ -639,17 +699,21 @@ import {
     Platform,
     StatusBar,
     ImageBackground,
-    Alert
+    Alert,
+    Image,
+    Touchable
 } from "react-native";
 import MapView, { Marker } from 'react-native-maps';
 import axios from "axios";
 import IssInfo from "./IssInfo";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 export default class IssLocationScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            location: {}
+            location: {},
+            isRefresh: false
         };
     }
 
@@ -688,6 +752,13 @@ export default class IssLocationScreen extends Component {
                         <View style={styles.titleContainer}>
                             <Text style={styles.titleText}>ISS Location</Text>
                         </View>
+                        <View style={styles.refeshContainer}>
+                            <TouchableOpacity style={{ width: 100, height: "100%", alignItems: "center" }} onPress={() =>
+                                this.setState({})
+                            }>
+                                <Image source={require("../assets/refresh_icon.jpg")} style={{ width: 50, height: 50 }}></Image>
+                            </TouchableOpacity>
+                        </View>
                         <View style={styles.mapContainer}>
                             <MapView
                                 style={styles.map}
@@ -700,7 +771,9 @@ export default class IssLocationScreen extends Component {
                             >
                                 <Marker
                                     coordinate={{ latitude: this.state.location.latitude, longitude: this.state.location.longitude }}
-                                />
+                                >
+                                    <Image source={require('../assets/iss_icon.png')} style={{ height: 50, width: 50 }} />
+                                </Marker>
                             </MapView>
                         </View>
                         <IssInfo />
@@ -732,8 +805,13 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         color: "white"
     },
+    refeshContainer: {
+        flex: 0.1,
+        justifyContent: "center",
+        alignItems: "center"
+    },
     mapContainer: {
-        flex: 0.7
+        flex: 0.6
     },
     map: {
         width: "100%",
